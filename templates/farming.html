@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farming Techniques Hub - KisanSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='farming.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <i class="fa-solid fa-leaf"></i>
+        <div>
+          <h1>KisanSetu</h1>
+          <p>Empowering Farmers, Enriching Future</p>
+        </div>
+      </div>
+
+      <nav class="main-nav">
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('crop') }}">Crops</a>
+        <a class="active" href="{{ url_for('farming') }}">Farming Techniques</a>
+        <a href="#">Market Prices</a>
+        <a href="#">Disease AI</a>
+        <a href="#">Fertilizers</a>
+        <a href="#">Schemes</a>
+      </nav>
+
+      <div class="top-actions">
+        <button class="search-icon" aria-label="search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <div class="profile">{{ initial or "AK" }}</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page-wrap">
+    <section class="hero-header">
+      <div class="hero-title">
+        <div class="hero-icon"><i class="fa-solid fa-seedling"></i></div>
+        <div>
+          <h2>Farming Techniques Hub</h2>
+          <p>Explore time-tested wisdom and modern innovations for sustainable agriculture.</p>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search techniques, practices, tools...">
+        </div>
+        <button class="filter-btn"><i class="fa-solid fa-filter"></i> Filters</button>
+      </div>
+    </section>
+
+    <div class="farming-grid">
+      <!-- Left Sidebar -->
+      <aside class="left-panel">
+        <div class="sidebar-box">
+          <h4>All Categories</h4>
+          <ul class="category-list" id="categoryList">
+            <!-- Injected by JS -->
+          </ul>
+        </div>
+
+        <div class="sidebar-box">
+          <h4>Quick Stats</h4>
+          <div class="quick-stats-list">
+            <div class="stat-item">
+              <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+              <div class="stat-text">
+                <strong>20+</strong>
+                <span>Farming Techniques</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon"><i class="fa-solid fa-book-open-reader"></i></div>
+              <div class="stat-text">
+                <strong>Step-by-step</strong>
+                <span>Guides & Manuals</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon"><i class="fa-solid fa-check-double"></i></div>
+              <div class="stat-text">
+                <strong>Expert</strong>
+                <span>Verified Content</span>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+              <div class="stat-text">
+                <strong>For Every Farmer</strong>
+                <span>Beginner to Expert</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <section class="main-panel" id="mainPanel">
+        <!-- Sections will be injected here via JS -->
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const categoryList = document.getElementById("categoryList");
+    const mainPanel = document.getElementById("mainPanel");
+
+    // Icons for sections header
+    const sectionIcons = {
+      "Traditional Techniques": "fa-seedling",
+      "Modern & Mechanized": "fa-tractor",
+      "Sustainable & Eco-Friendly": "fa-earth-americas",
+      "Innovative & Emerging": "fa-microscope",
+      "Practical Guides": "fa-clipboard-list",
+      "Farmer Support": "fa-handshake-angle"
+    };
+
+    // Icons for sidebar
+    const sidebarIcons = {
+      "Traditional Techniques": "fa-tree",
+      "Modern & Mechanized": "fa-gear",
+      "Sustainable & Eco-Friendly": "fa-leaf",
+      "Innovative & Emerging": "fa-lightbulb",
+      "Practical Guides": "fa-book",
+      "Farmer Support": "fa-users"
+    };
+
+    async function fetchTechniques() {
+      const response = await fetch("/api/farming");
+      const data = await response.json();
+      if(data.ok) {
+        renderPage(data.techniques);
+      }
+    }
+
+    function renderPage(techniques) {
+      // Group techniques by category
+      const grouped = {};
+      techniques.forEach(t => {
+        if(!grouped[t.category]) grouped[t.category] = [];
+        grouped[t.category].push(t);
+      });
+
+      // Categories to render in order
+      const orderedCategories = [
+        "Traditional Techniques",
+        "Modern & Mechanized",
+        "Sustainable & Eco-Friendly",
+        "Innovative & Emerging"
+      ];
+
+      const splitCategories = ["Practical Guides", "Farmer Support"];
+
+      // 1. Render Sidebar
+      const allCats = [...orderedCategories, ...splitCategories];
+      categoryList.innerHTML = "";
+      allCats.forEach(cat => {
+        const count = grouped[cat] ? grouped[cat].length : 0;
+        const icon = sidebarIcons[cat] || "fa-leaf";
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span><i class="fa-solid ${icon}"></i> ${cat}</span>
+          <strong>${count}</strong>
+        `;
+        categoryList.appendChild(li);
+      });
+
+      // 2. Render Main Panel
+      mainPanel.innerHTML = "";
+
+      // Render standard full-width sections
+      orderedCategories.forEach(cat => {
+        if(grouped[cat]) {
+          const section = createSection(cat, grouped[cat], sectionIcons[cat]);
+          mainPanel.appendChild(section);
+        }
+      });
+
+      // Render bottom split sections (Guides & Support)
+      const splitContainer = document.createElement("div");
+      splitContainer.className = "split-sections";
+
+      splitCategories.forEach(cat => {
+        if(grouped[cat]) {
+          const section = createIconSection(cat, grouped[cat], sectionIcons[cat]);
+          splitContainer.appendChild(section);
+        }
+      });
+      
+      mainPanel.appendChild(splitContainer);
+    }
+
+    function createSection(title, items, iconClass) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "tech-section";
+
+      // HTML for 4 items -> cards-grid-4, else cards-row (3 items)
+      const gridClass = items.length === 4 ? "cards-grid-4" : "cards-row";
+
+      let cardsHtml = items.map(item => `
+        <div class="horizontal-card">
+          <img src="${item.image}" alt="${item.title}" class="hc-img" loading="lazy">
+          <div class="hc-content">
+            <h4>${item.title}</h4>
+            <p>${item.description}</p>
+            <button class="hc-btn">Learn More</button>
+          </div>
+        </div>
+      `).join("");
+
+      wrapper.innerHTML = `
+        <div class="section-head">
+          <h3><i class="fa-solid ${iconClass || 'fa-seedling'}"></i> ${title}</h3>
+          <a href="#" class="view-all">View All <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="${gridClass}">
+          ${cardsHtml}
+        </div>
+      `;
+      return wrapper;
+    }
+
+    function createIconSection(title, items, iconClass) {
+      const wrapper = document.createElement("div");
+      wrapper.className = "tech-section";
+
+      let cardsHtml = items.map(item => `
+        <div class="icon-card">
+          <div class="ic-icon"><i class="fa-solid ${item.icon || 'fa-book'}"></i></div>
+          <div class="ic-content">
+            <h4>${item.title}</h4>
+            <p>${item.description}</p>
+          </div>
+        </div>
+      `).join("");
+
+      wrapper.innerHTML = `
+        <div class="section-head">
+          <h3 style="font-size: 16px; color:#d97706;"><i class="fa-solid ${iconClass || 'fa-book'}"></i> ${title}</h3>
+          <a href="#" class="view-all" style="color:#d97706;">View All <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          ${cardsHtml}
+        </div>
+      `;
+      
+      if(title === "Farmer Support") {
+         const h3 = wrapper.querySelector("h3");
+         const a = wrapper.querySelector("a");
+         h3.style.color = "#2563eb"; // Blue for farmer support
+         a.style.color = "#2563eb";
+      }
+
+      return wrapper;
+    }
+
+    fetchTechniques();
+  </script>
+</body>
+</html>

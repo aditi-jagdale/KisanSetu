@@ -10,6 +10,7 @@ if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
 from crop import get_crop_by_slug, get_crops, get_db, seed_crop_data
+from farming import seed_farming_data, get_techniques
 
 load_dotenv()
 
@@ -22,6 +23,7 @@ try:
     db = get_db()
     users_collection = db["users"]
     seed_crop_data()
+    seed_farming_data()
     print("MongoDB connected successfully")
 
 except Exception as e:
@@ -118,6 +120,24 @@ def api_crop_detail(slug):
     if not crop_item:
         return jsonify({"ok": False, "message": "Crop not found"}), 404
     return jsonify({"ok": True, "crop": crop_item})
+
+
+@app.route('/farming')
+def farming():
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    name = session.get('name')
+    initial = ""
+    if name:
+        words = name.split()
+        initial = "".join([w[0].upper() for w in words[:2]])
+    return render_template('farming.html', user=session.get('user'), initial=initial)
+
+
+@app.route('/api/farming')
+def api_farming():
+    data = get_techniques()
+    return jsonify({"ok": True, "techniques": data})
 
 
 @app.route('/logout')
