@@ -32,13 +32,13 @@
         <a  href="{{ url_for('scheme') }}">Schemes</a>
       </nav>
     <div class="nav-actions">
-      <button><i class="fa-solid fa-magnifying-glass"></i></button>
-      <button><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+
       {% if user %}
         <div class="profile-circle">{{ initial }}</div>
         <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="btn-login"><i class="fa-regular fa-user"></i> Login</a>
+        <a href="{{ url_for('signup') }}" class="btn-signup">Sign Up</a>
       {% endif %}
     </div>
   </div>
@@ -715,7 +715,7 @@ function openPriceDetails(name) {
       <p><strong>Packaging:</strong> ${item.pack_size} ${item.form}</p>
     </div>
     
-    <button class="btn-primary full-width" style="margin-top:20px;" onclick="showToast('Added to cart!'); closeModal('priceDetailsModal');">Order Now</button>
+
   `;
   openModal('priceDetailsModal');
 }
@@ -732,7 +732,7 @@ function openSupportModal() {
   openModal('supportModal'); 
 }
 
-function sendChatMessage() {
+async function sendChatMessage() {
   const input = document.getElementById('chat-input');
   const val = input.value.trim();
   if(!val) return;
@@ -751,17 +751,46 @@ function sendChatMessage() {
   input.value = '';
   box.scrollTop = box.scrollHeight;
   
-  // Fake response
-  setTimeout(() => {
+  // Show typing indicator
+  const typingId = 'typing-' + Date.now();
+  box.innerHTML += `
+    <div id="${typingId}">
+      <div style="background:var(--surface); padding:8px 12px; border-radius:12px; border:1px solid var(--border); display:inline-block; margin-bottom:8px; max-width:80%; color:var(--text-muted);">
+        Typing...
+      </div>
+    </div>
+  `;
+  box.scrollTop = box.scrollHeight;
+  
+  try {
+    const res = await fetch('/api/chat/fertilizer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: val })
+    });
+    
+    const data = await res.json();
+    document.getElementById(typingId).remove();
+    
     box.innerHTML += `
       <div>
         <div style="background:var(--surface); padding:8px 12px; border-radius:12px; border:1px solid var(--border); display:inline-block; margin-bottom:8px; max-width:80%;">
-          That's a great question! I'm currently assisting other farmers, but I have noted your query and will provide a detailed response shortly.
+          ${data.reply}
         </div>
       </div>
     `;
     box.scrollTop = box.scrollHeight;
-  }, 1000);
+  } catch(e) {
+    document.getElementById(typingId).remove();
+    box.innerHTML += `
+      <div>
+        <div style="background:var(--surface); padding:8px 12px; border-radius:12px; border:1px solid var(--border); display:inline-block; margin-bottom:8px; max-width:80%; color:red;">
+          Sorry, I am having trouble connecting to the server. Please try again later.
+        </div>
+      </div>
+    `;
+    box.scrollTop = box.scrollHeight;
+  }
 }
 
 // Init

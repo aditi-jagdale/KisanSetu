@@ -149,6 +149,8 @@ seed_farming_data()
 
 @app.route('/fertilizer')
 def fertilizer():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     user = session.get('user')
     name = session.get('name')
     initial = ""
@@ -167,10 +169,43 @@ def api_fertilizers():
     data = get_fertilizers(f_type=f_type, nutrient=nutrient, form=form, brand=brand)
     return jsonify(data)
 
+import random
+
+@app.route('/api/chat/fertilizer', methods=['POST'])
+def api_chat_fertilizer():
+    data = request.get_json()
+    if not data:
+        return jsonify({"reply": "I couldn't understand that."})
+        
+    message = data.get("message", "").lower()
+
+    if "urea" in message:
+        response = "Urea is high in Nitrogen (46%). It's excellent for promoting green leafy growth. Apply it when the soil is moist for best results."
+    elif "dap" in message:
+        response = "DAP (Diammonium Phosphate) provides both Nitrogen and Phosphorus. It's great for root development, especially during the early stages of planting."
+    elif "organic" in message or "compost" in message:
+        response = "Organic fertilizers like Vermicompost or FYM improve soil texture and provide slow-release nutrients. They are great for long-term soil health."
+    elif "price" in message or "cost" in message:
+        response = "Fertilizer prices vary by brand and region. Please check our price list section for the most up-to-date information."
+    elif "crop" in message or "plant" in message:
+        response = "Different crops have different nutrient requirements. Can you specify which crop you are planning to fertilize?"
+    else:
+        responses = [
+            "Based on general agricultural practices, ensuring balanced soil nutrition is key. Consider a soil test if you haven't done one recently.",
+            "That's an interesting question. Generally, the right fertilizer depends on your specific crop and soil type. Can you provide more details?",
+            "For most staple crops, starting with a basal dose of NPK is recommended. Top dressing can be done later depending on crop growth.",
+            "Make sure to also consider micronutrients like Zinc and Boron, as deficiencies in these are common in many soils."
+        ]
+        response = random.choice(responses)
+
+    return jsonify({"reply": response})
+
 # ---------- MARKET PAGE ---------- #
 
 @app.route('/market')
 def market():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     user = session.get('user')
     name = session.get('name')
     initial = ""
@@ -190,6 +225,8 @@ def api_market():
 
 @app.route('/disease')
 def disease():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     user = session.get('user')
     name = session.get('name')
     initial = ""
@@ -202,6 +239,8 @@ def disease():
 
 @app.route('/scheme')
 def scheme():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     user = session.get('user')
     name = session.get('name')
     initial = ""
@@ -212,6 +251,8 @@ def scheme():
 
 @app.route('/farming')
 def farming():
+    if 'user' not in session:
+        return redirect(url_for('login'))
     user = session.get('user')
     name = session.get('name')
     initial = ""

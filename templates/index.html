@@ -37,15 +37,12 @@
       </nav>
 
     <div class="nav-actions">
-      <button><i class="fa-solid fa-magnifying-glass"></i></button>
 
       {% if user %}
         <div class="profile-circle">{{ initial }}</div>
-        <a href="{{ url_for('logout') }}" class="btn-login">Logout</a>
+        <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
       {% else %}
-        <a href="{{ url_for('login') }}" class="btn-login">
-          <i class="fa-regular fa-user"></i> Login
-        </a>
+        <a href="{{ url_for('login') }}" class="btn-login"><i class="fa-regular fa-user"></i> Login</a>
         <a href="{{ url_for('signup') }}" class="btn-signup">Sign Up</a>
       {% endif %}
     </div>
@@ -86,7 +83,7 @@
     <i class="fa-solid fa-tractor"></i>
     <h3>Farming Techniques</h3>
     <p>Modern farming guides and best practices.</p>
-    <a href="#">Explore →</a>
+    <a href="{{ url_for('farming') }}">Explore →</a>
   </article>
 
   <article class="card">
@@ -107,7 +104,7 @@
     <i class="fa-solid fa-landmark"></i>
     <h3>Govt Schemes</h3>
     <p>Subsidies and policies.</p>
-    <a href="#">Explore →</a>
+    <a href="{{ url_for('scheme') }}">Explore →</a>
   </article>
 
 </section>

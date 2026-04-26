@@ -35,13 +35,13 @@
         <a  href="{{ url_for('scheme') }}">Schemes</a>
       </nav>
     <div class="nav-actions">
-      <button><i class="fa-solid fa-magnifying-glass"></i></button>
-      <button><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+
       {% if user %}
         <div class="profile-circle">{{ initial }}</div>
         <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
       {% else %}
         <a href="{{ url_for('login') }}" class="btn-login"><i class="fa-regular fa-user"></i> Login</a>
+        <a href="{{ url_for('signup') }}" class="btn-signup">Sign Up</a>
       {% endif %}
     </div>
   </div>

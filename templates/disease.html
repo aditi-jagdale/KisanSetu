@@ -32,8 +32,7 @@
         <a  href="{{ url_for('scheme') }}">Schemes</a>
       </nav>
     <div class="nav-actions">
-      <button><i class="fa-solid fa-magnifying-glass"></i></button>
-      <button><i class="fa-regular fa-bell"></i></button>
+
       {% if user %}
         <div class="profile-circle">{{ initial }}</div>
         <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
@@ -54,9 +53,7 @@
                 <i class="fa-solid fa-search"></i>
                 <input type="text" id="searchInput" placeholder="Search disease..." onkeyup="filterDiseases()">
             </div>
-            <button class="filter-btn">
-                <i class="fa-solid fa-filter"></i> Filter <i class="fa-solid fa-chevron-down" style="font-size: 12px;"></i>
-            </button>
+
         </div>
     </div>
 
@@ -100,14 +97,7 @@
         <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
     </div>
 
-    <!-- Footer Note -->
-    <div class="footer-note">
-        <i class="fa-regular fa-circle-info"></i>
-        <div>
-            <strong>This information is for educational purposes only.</strong>
-            <span>For agronomic advice, please consult a qualified agricultural professional.</span>
-        </div>
-    </div>
+
 </main>
 
 <!-- Modal Overlay -->
