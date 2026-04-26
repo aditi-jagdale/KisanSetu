@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Market Prices - KisanSetu</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='market.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="topbar">
+  <div class="container nav-wrap">
+    <div class="brand">
+      <i class="fa-solid fa-seedling"></i>
+      <div>
+        <h1>KisanSetu</h1>
+        <p>Empowering Farmers, Enriching Future</p>
+      </div>
+    </div>
+          <nav class="main-nav">
+        <a  href="{{ url_for('index') }}">Home</a>
+        <a  href="{{ url_for('crop') }}">Crops</a>
+        <a  href="{{ url_for('farming') }}">Farming Techniques</a>
+        <a class="active" href="{{ url_for('market') }}">Market Prices</a>
+        <a  href="{{ url_for('disease') }}">Disease Directory</a>
+        <a  href="{{ url_for('fertilizer') }}">Fertilizers</a>
+        <a  href="{{ url_for('scheme') }}">Schemes</a>
+      </nav>
+    <div class="nav-actions">
+      <button><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+      {% if user %}
+        <div class="profile-circle">{{ initial }}</div>
+        <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-login"><i class="fa-regular fa-user"></i> Login</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO BANNER ================= -->
+<section class="market-hero">
+  <div class="container hero-content">
+    <div class="hero-text">
+      <h2>Market Prices</h2>
+      <p>Get real-time market prices for crops across different markets. Make informed decisions and maximize your profits.</p>
+      <div class="hero-tabs">
+        <button class="active" id="tab-all-crops" onclick="switchTab('all')">All Crops</button>
+        <button class="outline" id="tab-tracked-crops" onclick="switchTab('tracked')">My Tracked Crops</button>
+      </div>
+    </div>
+    <div class="hero-image-wrapper">
+      <!-- Image is handled via CSS background in .market-hero -->
+    </div>
+  </div>
+</section>
+
+<!-- ================= MAIN LAYOUT ================= -->
+<div class="container layout">
+  
+  <!-- LEFT SIDEBAR: FILTERS -->
+  <aside class="sidebar-left">
+    <div class="filter-box">
+      <div class="filter-header">
+        <h3><i class="fa-solid fa-filter"></i> Filters</h3>
+        <a href="#" class="reset-link" onclick="resetFilters(event)">Reset</a>
+      </div>
+      
+      <div class="filter-group">
+        <label>Select Crop</label>
+        <select id="filter-crop" onchange="fetchData()">
+          <option>All Crops</option>
+          <option>Wheat</option>
+          <option>Rice (Paddy)</option>
+          <option>Cotton</option>
+          <option>Maize</option>
+          <option>Tur (Pigeon Pea)</option>
+          <option>Tomato</option>
+          <option>Potato</option>
+          <option>Onion</option>
+          <option>Soybean</option>
+          <option>Sugarcane</option>
+          <option>Saffron</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Select State</label>
+        <select id="filter-state" onchange="fetchData()">
+          <option>All States</option>
+          <option>Maharashtra</option>
+          <option>Delhi</option>
+          <option>Gujarat</option>
+          <option>Bihar</option>
+          <option>Haryana</option>
+          <option>Punjab</option>
+          <option>Madhya Pradesh</option>
+          <option>Andhra Pradesh</option>
+          <option>Karnataka</option>
+          <option>Kashmir</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Select Market</label>
+        <select id="filter-market" onchange="fetchData()">
+          <option>All Markets</option>
+          <!-- Will be dynamically populated or generic -->
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Price Range</label>
+        <input type="range" min="0" max="10000" value="10000" class="price-slider" disabled>
+        <div class="range-labels">
+          <span>₹0</span>
+          <span>₹10,000+</span>
+        </div>
+      </div>
+      
+      <button class="btn-primary full-width" onclick="fetchData()">Apply Filters</button>
+    </div>
+    
+    <div class="track-box">
+      <h4>Track your favorite crops</h4>
+      <p>Add crops to track price changes and get notified.</p>
+      <button class="btn-outline-green" onclick="addTrackedCrop()"><i class="fa-regular fa-star"></i> Add to My Crops</button>
+    </div>
+  </aside>
+
+  <!-- CENTER CONTENT -->
+  <main class="main-content">
+    
+    <!-- OVERVIEW STATS -->
+    <div class="stats-header">
+      <h3>Price Overview (<span id="overview-title">All Crops</span>)</h3>
+      <div class="last-updated">Last updated: Today, 10:30 AM <a href="#" onclick="fetchData(); return false;"><i class="fa-solid fa-rotate"></i> Refresh</a></div>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-card green-tint">
+        <div class="stat-info">
+          <span>Average Price</span>
+          <h2 id="avg-price">₹-- <span>/quintal</span></h2>
+          <div class="trend positive"><i class="fa-solid fa-arrow-trend-up"></i> 2.45% vs yesterday</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+      </div>
+      
+      <div class="stat-card blue-tint">
+        <div class="stat-info">
+          <span>Highest Price</span>
+          <h2 id="high-price">₹-- <span>/quintal</span></h2>
+          <div class="sub-text" id="high-market">--</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-arrow-up-right-dots"></i></div>
+      </div>
+      
+      <div class="stat-card yellow-tint">
+        <div class="stat-info">
+          <span>Lowest Price</span>
+          <h2 id="low-price">₹-- <span>/quintal</span></h2>
+          <div class="sub-text" id="low-market">--</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-arrow-down-long"></i></div>
+      </div>
+      
+      <div class="stat-card purple-tint">
+        <div class="stat-info">
+          <span>Markets Tracked</span>
+          <h2 id="market-count">--</h2>
+          <div class="sub-text">Across India</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
+      </div>
+    </div>
+
+    <!-- CHART -->
+    <div class="chart-section panel">
+      <div class="chart-header">
+        <h3>Price Trends</h3>
+        <select class="chart-select">
+          <option>All Crops</option>
+        </select>
+        <div class="time-tabs" id="chart-tabs">
+          <button onclick="updateChartTimeframe(1, this)">1D</button>
+          <button class="active" onclick="updateChartTimeframe(7, this)">7D</button>
+          <button onclick="updateChartTimeframe(30, this)">30D</button>
+          <button onclick="updateChartTimeframe(365, this)">1Y</button>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-section panel">
+      <h3>Market Prices by Crop</h3>
+      <div class="table-responsive">
+        <table class="market-table">
+          <thead>
+            <tr>
+              <th>Crop</th>
+              <th>Market</th>
+              <th>State</th>
+              <th>Min Price (₹/q)</th>
+              <th>Max Price (₹/q)</th>
+              <th>Modal Price (₹/q)</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody id="market-table-body">
+            <tr><td colspan="7" style="text-align: center; padding: 20px;">Loading data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <a href="#" onclick="openAllPricesModal(); return false;">View All Prices <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR: HIGHLIGHTS & ALERTS -->
+  <aside class="sidebar-right">
+    
+    <div class="highlights-panel panel">
+      <h3>Market Highlights</h3>
+      
+      <div class="highlight-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/5024/5024479.png" alt="Wheat">
+        <div class="highlight-info">
+          <h4>Wheat prices up</h4>
+          <p>Increased by 1.82% in major markets</p>
+        </div>
+      </div>
+      
+      <div class="highlight-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/3061/3061189.png" alt="Cotton">
+        <div class="highlight-info">
+          <h4>Cotton prices stable</h4>
+          <p>Steady prices across most markets</p>
+        </div>
+      </div>
+      
+      <div class="highlight-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/3014/3014495.png" alt="Rice">
+        <div class="highlight-info">
+          <h4>Rice demand high</h4>
+          <p>Increased demand in southern markets</p>
+        </div>
+      </div>
+      
+      <div class="highlight-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/1206/1206385.png" alt="Maize">
+        <div class="highlight-info">
+          <h4>Maize supply high</h4>
+          <p>Good supply keeping prices stable</p>
+        </div>
+      </div>
+      
+      <a href="#" class="view-detailed" onclick="openInsightsModal(); return false;">View Detailed Insights <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    
+    <div class="alert-panel panel">
+      <h3><i class="fa-solid fa-bell"></i> Price Alert</h3>
+      <p>Get notified about price changes for your tracked crops.</p>
+      <button class="btn-dark-green full-width" onclick="openAlertModal()"><i class="fa-regular fa-bell"></i> Set Price Alerts</button>
+    </div>
+    
+    <div class="download-panel panel">
+      <h3><i class="fa-solid fa-file-invoice"></i> Download Reports</h3>
+      <p>Download market price reports and analytics.</p>
+      <button class="btn-outline-gray full-width" onclick="downloadCSV()"><i class="fa-solid fa-download"></i> Download Now</button>
+    </div>
+
+  </aside>
+
+</div> <!-- End Layout -->
+
+<!-- ================= MODALS & TOASTS ================= -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- View All Prices Modal -->
+<div id="allPricesModal" class="market-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>All Market Prices</h3>
+      <button class="btn-close" onclick="closeModal('allPricesModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-responsive modal-table-wrap">
+        <table class="market-table">
+          <thead>
+            <tr>
+              <th>Crop</th>
+              <th>Market</th>
+              <th>State</th>
+              <th>Min Price (₹/q)</th>
+              <th>Max Price (₹/q)</th>
+              <th>Modal Price (₹/q)</th>
+              <th>Change</th>
+            </tr>
+          </thead>
+          <tbody id="modal-table-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detailed Insights Modal -->
+<div id="insightsModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>Market Insights</h3>
+      <button class="btn-close" onclick="closeModal('insightsModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="insights-body">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Price Alert Modal -->
+<div id="alertModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>Set Price Alert</h3>
+      <button class="btn-close" onclick="closeModal('alertModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="filter-group">
+        <label>Target Price (₹/q)</label>
+        <input type="number" id="alert-price-input" placeholder="e.g. 2500" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">
+      </div>
+      <button class="btn-primary full-width" style="margin-top: 10px;" onclick="saveAlert()">Save Alert</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let myChart = null;
+let currentChartData = [];
+let currentDays = 7;
+let allFetchedData = [];
+let isTrackedMode = false;
+
+// Helpers
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+  container.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+async function fetchData() {
+  const crop = document.getElementById('filter-crop').value;
+  const state = document.getElementById('filter-state').value;
+  const market = document.getElementById('filter-market').value;
+  
+  document.getElementById('overview-title').innerText = crop;
+
+  try {
+    const res = await fetch(`/api/market?crop=${encodeURIComponent(crop)}&state=${encodeURIComponent(state)}&market=${encodeURIComponent(market)}`);
+    let data = await res.json();
+    
+    // Filter locally if in Tracked Mode
+    if (isTrackedMode) {
+      const tracked = getTrackedCrops();
+      if (tracked.length === 0) {
+        data = []; // No tracked crops
+      } else {
+        data = data.filter(d => tracked.includes(d.crop_name));
+      }
+    }
+    
+    allFetchedData = data; // Save for modal and downloads
+    
+    renderTable(data);
+    updateStats(data);
+    
+    if (data.length > 0) {
+      // Calculate average trend across all returned items
+      const numDays = 7;
+      let avgTrend = new Array(numDays).fill(0);
+      data.forEach(item => {
+        for(let i=0; i<numDays; i++) {
+          avgTrend[i] += item.trend_data[i];
+        }
+      });
+      for(let i=0; i<numDays; i++) {
+        avgTrend[i] = Math.round(avgTrend[i] / data.length);
+      }
+      currentChartData = avgTrend;
+      renderChart(avgTrend, currentDays);
+    } else {
+      currentChartData = [];
+      renderChart([], currentDays); // Clear
+    }
+    
+    checkAlerts(data);
+
+    
+  } catch (err) {
+    console.error("Error fetching market data:", err);
+  }
+}
+
+function updateStats(data) {
+  if (data.length === 0) {
+    document.getElementById('avg-price').innerHTML = `₹0 <span>/quintal</span>`;
+    document.getElementById('high-price').innerHTML = `₹0 <span>/quintal</span>`;
+    document.getElementById('low-price').innerHTML = `₹0 <span>/quintal</span>`;
+    document.getElementById('market-count').innerText = "0";
+    return;
+  }
+
+  let total = 0;
+  let high = -1;
+  let low = Infinity;
+  let highItem = null;
+  let lowItem = null;
+  
+  const uniqueMarkets = new Set();
+
+  data.forEach(item => {
+    total += item.modal_price;
+    uniqueMarkets.add(item.market);
+    if (item.max_price > high) {
+      high = item.max_price;
+      highItem = item;
+    }
+    if (item.min_price < low) {
+      low = item.min_price;
+      lowItem = item;
+    }
+  });
+
+  const avg = Math.round(total / data.length);
+  
+  document.getElementById('avg-price').innerHTML = `₹${avg.toLocaleString()} <span>/quintal</span>`;
+  document.getElementById('high-price').innerHTML = `₹${high.toLocaleString()} <span>/quintal</span>`;
+  document.getElementById('high-market').innerText = `${highItem.crop_name}\n${highItem.state}`;
+  
+  document.getElementById('low-price').innerHTML = `₹${low.toLocaleString()} <span>/quintal</span>`;
+  document.getElementById('low-market').innerText = `${lowItem.crop_name}\n${lowItem.state}`;
+  
+  document.getElementById('market-count').innerText = uniqueMarkets.size;
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('market-table-body');
+  tbody.innerHTML = "";
+  
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 20px;">No data available for selected filters.</td></tr>`;
+    return;
+  }
+
+  // Render top 10 to not crash browser
+  const displayData = data.slice(0, 15);
+  
+  displayData.forEach(item => {
+    const tr = document.createElement('tr');
+    
+    // Determine color for change
+    const changeColor = item.change.includes('+') ? '#16a34a' : '#dc2626';
+    const changeIcon = item.change.includes('+') ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+    
+    tr.innerHTML = `
+      <td class="crop-cell">
+        <img src="${item.crop_icon}" alt="${item.crop_name}">
+        <span>${item.crop_name}</span>
+      </td>
+      <td>${item.market}</td>
+      <td>${item.state}</td>
+      <td>${item.min_price.toLocaleString()}</td>
+      <td>${item.max_price.toLocaleString()}</td>
+      <td class="fw-600">${item.modal_price.toLocaleString()}</td>
+      <td style="color: ${changeColor}; font-weight: 500;">
+        <i class="fa-solid ${changeIcon}"></i> ${item.change}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function updateChartTimeframe(days, btnElement) {
+  currentDays = days;
+  
+  // Update active button state
+  const tabs = document.querySelectorAll('#chart-tabs button');
+  tabs.forEach(tab => tab.classList.remove('active'));
+  btnElement.classList.add('active');
+
+  // Re-render chart with mocked data length logic based on 'days' requested
+  renderChart(currentChartData, currentDays);
+}
+
+function renderChart(baseTrendData, numDaysToDisplay = 7) {
+  const ctx = document.getElementById('priceChart').getContext('2d');
+  
+  if (myChart) {
+    myChart.destroy();
+  }
+  
+  if (baseTrendData.length === 0) return;
+
+  // We only have 7 days of real backend data right now. 
+  // To simulate 1D, 30D, or 1Y, we extrapolate or slice the data on the frontend
+  let displayData = [];
+  let labels = [];
+
+  if (numDaysToDisplay === 1) {
+    displayData = [baseTrendData[baseTrendData.length - 1]];
+    labels = ["Today"];
+  } else if (numDaysToDisplay === 7) {
+    displayData = [...baseTrendData];
+    for(let i=6; i>=0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      labels.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+    }
+  } else if (numDaysToDisplay === 30 || numDaysToDisplay === 365) {
+    // Generate mocked historical data based on the trend
+    const points = numDaysToDisplay === 30 ? 30 : 12; // Use 12 months for 1Y
+    let currentVal = baseTrendData[0];
+    
+    for(let i=points-1; i>=0; i--) {
+      const d = new Date();
+      if (numDaysToDisplay === 30) {
+        d.setDate(d.getDate() - i);
+        labels.push(d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }));
+      } else {
+        d.setMonth(d.getMonth() - i);
+        labels.push(d.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }));
+      }
+      
+      currentVal = currentVal * (1 + (Math.random() * 0.06 - 0.03));
+      displayData.push(Math.round(currentVal));
+    }
+    // Set the last point to the actual current price
+    displayData[displayData.length - 1] = baseTrendData[baseTrendData.length - 1];
+  }
+
+  myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Average Modal Price (₹/q)',
+        data: displayData,
+        borderColor: '#16a34a',
+        backgroundColor: 'rgba(22, 163, 74, 0.1)',
+        borderWidth: 2,
+        pointBackgroundColor: '#16a34a',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: '#16a34a',
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: false,
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#fff',
+          titleColor: '#1e293b',
+          bodyColor: '#1e293b',
+          borderColor: '#e2e8f0',
+          borderWidth: 1,
+          padding: 10,
+          displayColors: false,
+          callbacks: {
+            label: function(context) {
+              return 'Average Price: ₹' + context.parsed.y + '/quintal';
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: false,
+          grid: {
+            color: '#f1f5f9',
+            drawBorder: false,
+          },
+          ticks: { color: '#64748b' }
+        },
+        x: {
+          grid: { display: false, drawBorder: false },
+          ticks: { color: '#64748b' }
+        }
+      }
+    }
+  });
+}
+
+// ================= NEW INTERACTIVE LOGIC =================
+
+// Tracked Crops State
+function getTrackedCrops() {
+  return JSON.parse(localStorage.getItem('trackedCrops') || '[]');
+}
+
+function addTrackedCrop() {
+  const crop = document.getElementById('filter-crop').value;
+  if (crop === 'All Crops') {
+    showToast("Please select a specific crop to track!");
+    return;
+  }
+  let tracked = getTrackedCrops();
+  if (!tracked.includes(crop)) {
+    tracked.push(crop);
+    localStorage.setItem('trackedCrops', JSON.stringify(tracked));
+    showToast(`${crop} added to tracked list!`);
+  } else {
+    showToast(`${crop} is already tracked.`);
+  }
+}
+
+function switchTab(mode) {
+  const allBtn = document.getElementById('tab-all-crops');
+  const trackBtn = document.getElementById('tab-tracked-crops');
+  
+  if (mode === 'all') {
+    allBtn.className = 'active';
+    trackBtn.className = 'outline';
+    isTrackedMode = false;
+  } else {
+    trackBtn.className = 'active';
+    allBtn.className = 'outline';
+    isTrackedMode = true;
+  }
+  fetchData();
+}
+
+// Download CSV
+function downloadCSV() {
+  if (allFetchedData.length === 0) {
+    showToast("No data available to download.");
+    return;
+  }
+  
+  let csvContent = "data:text/csv;charset=utf-8,";
+  csvContent += "Crop,Market,State,Min Price,Max Price,Modal Price,Change\r\n";
+  
+  allFetchedData.forEach(row => {
+    csvContent += `"${row.crop_name}","${row.market}","${row.state}",${row.min_price},${row.max_price},${row.modal_price},"${row.change}"\r\n`;
+  });
+  
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "market_prices_report.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  showToast("Download started!");
+}
+
+// View All Prices Modal
+function openAllPricesModal() {
+  if (allFetchedData.length === 0) {
+    showToast("No data to show.");
+    return;
+  }
+  const tbody = document.getElementById('modal-table-body');
+  tbody.innerHTML = "";
+  
+  allFetchedData.forEach(item => {
+    const changeColor = item.change.includes('+') ? '#16a34a' : '#dc2626';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="crop-cell"><img src="${item.crop_icon}"> <span>${item.crop_name}</span></td>
+      <td>${item.market}</td>
+      <td>${item.state}</td>
+      <td>${item.min_price.toLocaleString()}</td>
+      <td>${item.max_price.toLocaleString()}</td>
+      <td class="fw-600">${item.modal_price.toLocaleString()}</td>
+      <td style="color: ${changeColor}; font-weight: 500;">${item.change}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  
+  document.getElementById('allPricesModal').classList.add('active');
+}
+
+// Detailed Insights Modal
+function openInsightsModal() {
+  if (allFetchedData.length === 0) {
+    showToast("No data for insights.");
+    return;
+  }
+  
+  let highestChange = { val: -Infinity, item: null };
+  let lowestChange = { val: Infinity, item: null };
+  
+  allFetchedData.forEach(d => {
+    const c = parseFloat(d.change.replace('%', '').replace('+', ''));
+    if (c > highestChange.val) highestChange = { val: c, item: d };
+    if (c < lowestChange.val) lowestChange = { val: c, item: d };
+  });
+  
+  const body = document.getElementById('insights-body');
+  body.innerHTML = `
+    <div class="insight-card">
+      <h4 style="color: #16a34a;"><i class="fa-solid fa-arrow-trend-up"></i> Top Gainer</h4>
+      <p><strong>${highestChange.item.crop_name}</strong> in ${highestChange.item.market} surged by ${highestChange.item.change}.</p>
+    </div>
+    <div class="insight-card">
+      <h4 style="color: #dc2626;"><i class="fa-solid fa-arrow-trend-down"></i> Top Loser</h4>
+      <p><strong>${lowestChange.item.crop_name}</strong> in ${lowestChange.item.market} dropped by ${lowestChange.item.change}.</p>
+    </div>
+    <div class="insight-card">
+      <h4><i class="fa-solid fa-chart-pie"></i> Market Share</h4>
+      <p>Tracking ${allFetchedData.length} records across ${new Set(allFetchedData.map(d=>d.state)).size} states.</p>
+    </div>
+  `;
+  
+  document.getElementById('insightsModal').classList.add('active');
+}
+
+// Price Alerts
+function openAlertModal() {
+  const crop = document.getElementById('filter-crop').value;
+  if (crop === 'All Crops') {
+    showToast("Please select a specific crop first!");
+    return;
+  }
+  document.getElementById('alertModal').classList.add('active');
+}
+
+function saveAlert() {
+  const price = document.getElementById('alert-price-input').value;
+  const crop = document.getElementById('filter-crop').value;
+  if (!price) {
+    showToast("Please enter a valid price."); return;
+  }
+  
+  localStorage.setItem(`alert_${crop}`, price);
+  closeModal('alertModal');
+  showToast(`Alert set! You will be notified if ${crop} hits ₹${price}/q.`);
+  fetchData(); // re-check immediately
+}
+
+function checkAlerts(data) {
+  // Simple checker
+  data.forEach(item => {
+    const target = localStorage.getItem(`alert_${item.crop_name}`);
+    if (target && item.modal_price >= parseFloat(target)) {
+      showToast(`🚨 ALERT: ${item.crop_name} has reached ₹${item.modal_price} in ${item.market}!`);
+      localStorage.removeItem(`alert_${item.crop_name}`); // remove after firing
+    }
+  });
+}
+
+function resetFilters(e) {
+  e.preventDefault();
+  document.getElementById('filter-crop').value = 'All Crops';
+  document.getElementById('filter-state').value = 'All States';
+  document.getElementById('filter-market').value = 'All Markets';
+  fetchData();
+}
+
+// Initial fetch
+document.addEventListener("DOMContentLoaded", fetchData);
+</script>
+
+</body>
+</html>

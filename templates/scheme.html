@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Government Schemes - KisanSetu</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container nav-wrap">
+    <div class="brand">
+      <i class="fa-solid fa-seedling"></i>
+      <div>
+        <h1>KisanSetu</h1>
+        <p>Empowering Farmers, Enriching Future</p>
+      </div>
+    </div>
+          <nav class="main-nav">
+        <a  href="{{ url_for('index') }}">Home</a>
+        <a  href="{{ url_for('crop') }}">Crops</a>
+        <a  href="{{ url_for('farming') }}">Farming Techniques</a>
+        <a  href="{{ url_for('market') }}">Market Prices</a>
+        <a  href="{{ url_for('disease') }}">Disease Directory</a>
+        <a  href="{{ url_for('fertilizer') }}">Fertilizers</a>
+        <a class="active" href="{{ url_for('scheme') }}">Schemes</a>
+      </nav>
+    <div class="nav-actions">
+      <button aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+      {% if user %}
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: #11753b; color: #fff; display: grid; place-items: center; font-size: 14px; font-weight: 600;">{{ initial }}</div>
+        <a href="{{ url_for('logout') }}" class="btn-login" style="background:transparent; color:#11753b;">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-login" style="background:transparent; color:#11753b;"><i class="fa-regular fa-user"></i> Login</a>
+        <a href="{{ url_for('signup') }}" class="btn-signup">Sign Up</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container hero-box" style="background: linear-gradient(135deg, #c8e6c9, #e8f5e9);">
+      <div class="hero-content">
+        <h2 style="color: #1b5e20;">Supporting Farmers. Building Tomorrow.</h2>
+        <p>Your all-in-one platform for schemes, subsidies, and benefits.</p>
+
+        <div class="quick-icons">
+          <article><i class="fa-solid fa-leaf"></i><span>Learn</span></article>
+          <article><i class="fa-solid fa-chart-line"></i><span>Grow</span></article>
+          <article><i class="fa-solid fa-users"></i><span>Connect</span></article>
+          <article><i class="fa-solid fa-globe"></i><span>Sustain</span></article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTIONS -->
+  <div class="container" style="margin-top: 40px;">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;"><i class="fa-solid fa-sack-dollar"></i> Income Support</h2>
+      <section class="cards cards-four" id="income"></section>
+  </div>
+  
+  <div class="container" style="margin-top: 40px;">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;"><i class="fa-solid fa-wheat-awn"></i> Crop Insurance</h2>
+      <section class="cards cards-four" id="insurance"></section>
+  </div>
+  
+  <div class="container" style="margin-top: 40px;">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;"><i class="fa-solid fa-droplet"></i> Irrigation</h2>
+      <section class="cards cards-four" id="irrigation"></section>
+  </div>
+
+  <div class="container" style="margin-top: 40px;">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;"><i class="fa-solid fa-building-columns"></i> Loans & Credit</h2>
+      <section class="cards cards-four" id="loan"></section>
+  </div>
+
+  <div class="container" style="margin-top: 40px;">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;"><i class="fa-solid fa-leaf"></i> Organic & Sustainable</h2>
+      <section class="cards cards-four" id="organic"></section>
+  </div>
+
+  <div class="container" style="margin-top: 40px; margin-bottom: 40px;">
+      <h2 style="color: #2e7d32; margin-bottom: 20px;"><i class="fa-solid fa-truck-fast"></i> Marketing & Infrastructure</h2>
+      <section class="cards cards-four" id="market"></section>
+  </div>
+</main>
+
+<footer class="stats">
+  <div class="container stats-grid">
+    <article><h4>1M+</h4><p>Farmers</p></article>
+    <article><h4>500+</h4><p>Crops</p></article>
+    <article><h4>100+</h4><p>Markets</p></article>
+  </div>
+</footer>
+
+<footer class="site-footer">
+  <div class="container footer-main">
+    <section class="footer-brand">
+      <div class="footer-logo">
+        <i class="fa-solid fa-seedling"></i>
+        <h3>KisanSetu</h3>
+      </div>
+      <p>Bridging the gap between farmers, knowledge, and opportunities.</p>
+    </section>
+    <section class="footer-links">
+      <h4>Explore</h4>
+      <a href="{{ url_for('crop') }}">Crops</a>
+      <a href="{{ url_for('farming') }}">Farming Techniques</a>
+      <a href="{{ url_for('market') }}">Market Prices</a>
+      <a href="#">Tools</a>
+      <a href="{{ url_for('scheme') }}">Schemes & Subsidies</a>
+    </section>
+    <section class="footer-contact">
+      <h4>Contact Us</h4>
+      <a href="#"><i class="fa-solid fa-phone"></i> +91 12345 67890</a>
+      <a href="#"><i class="fa-solid fa-envelope"></i> support@kisansetu.com</a>
+    </section>
+  </div>
+  <div class="container footer-bottom">
+    <p>&copy; 2026 KisanSetu. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+    const schemes = [
+        { name: "PM-KISAN", desc: "Income support", benefit: "₹6000/year", eligibility: "Small farmers", link: "https://pmkisan.gov.in", category: "income", icon: "fa-sack-dollar" },
+        { name: "PMFBY", desc: "Crop insurance", benefit: "Insurance cover", eligibility: "Farmers", link: "https://pmfby.gov.in", category: "insurance", icon: "fa-wheat-awn" },
+        { name: "KCC", desc: "Low-interest loan", benefit: "4% interest", eligibility: "Farmers", link: "https://pmkisan.gov.in/Documents/Kcc.pdf", category: "loan", icon: "fa-building-columns" },
+        { name: "PMKSY", desc: "Irrigation", benefit: "Water subsidy", eligibility: "Farmers", link: "https://pmksy.gov.in", category: "irrigation", icon: "fa-droplet" },
+        { name: "Soil Health Card", desc: "Soil testing", benefit: "Free report", eligibility: "Farmers", link: "https://soilhealth.dac.gov.in", category: "organic", icon: "fa-leaf" },
+        { name: "PKVY", desc: "Organic farming", benefit: "Subsidy", eligibility: "Groups", link: "https://pgsindia-ncof.gov.in", category: "organic", icon: "fa-seedling" },
+        { name: "PM KUSUM", desc: "Solar pumps", benefit: "60% subsidy", eligibility: "Farmers", link: "https://mnre.gov.in", category: "irrigation", icon: "fa-sun" },
+        { name: "e-NAM", desc: "Online market", benefit: "Better price", eligibility: "Farmers", link: "https://enam.gov.in", category: "market", icon: "fa-truck-fast" },
+        { name: "AIF", desc: "Infra fund", benefit: "Loan", eligibility: "Agri sector", link: "https://agriinfra.dac.gov.in", category: "market", icon: "fa-industry" }
+    ];
+
+    function renderSchemes() {
+        schemes.forEach(s => {
+            const section = document.getElementById(s.category);
+            if(section) {
+                section.innerHTML += `
+                <article class="card scheme-card">
+                    <i class="fa-solid ${s.icon}"></i>
+                    <h3>${s.name}</h3>
+                    <p style="margin-bottom:4px;"><strong>Description:</strong> ${s.desc}</p>
+                    <p style="margin-bottom:4px;"><strong>Benefit:</strong> ${s.benefit}</p>
+                    <p style="margin-bottom:12px;"><strong>Eligibility:</strong> ${s.eligibility}</p>
+                    <a href="${s.link}" target="_blank">Official Link →</a>
+                </article>`;
+            }
+        });
+    }
+
+    renderSchemes();
+
+</script>
+
+</body>
+</html>

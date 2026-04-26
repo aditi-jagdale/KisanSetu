@@ -19,14 +19,14 @@
         </div>
       </div>
 
-      <nav class="main-nav">
-        <a href="{{ url_for('index') }}">Home</a>
+            <nav class="main-nav">
+        <a  href="{{ url_for('index') }}">Home</a>
         <a class="active" href="{{ url_for('crop') }}">Crops</a>
-        <a href="{{ url_for('farming') }}">Farming Techniques</a>
-        <a href="#">Market Prices</a>
-        <a href="#">Disease AI</a>
-        <a href="#">Fertilizers</a>
-        <a href="#">Schemes</a>
+        <a  href="{{ url_for('farming') }}">Farming Techniques</a>
+        <a  href="{{ url_for('market') }}">Market Prices</a>
+        <a  href="{{ url_for('disease') }}">Disease Directory</a>
+        <a  href="{{ url_for('fertilizer') }}">Fertilizers</a>
+        <a  href="{{ url_for('scheme') }}">Schemes</a>
       </nav>
 
       <div class="top-actions" style="display: flex; align-items: center; gap: 16px;">

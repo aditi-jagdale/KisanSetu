@@ -29,90 +29,9 @@ def _slugify(name: str) -> str:
 
 
 def _build_image_url(query: str) -> str:
-    image_keywords = {
-        "Rice": "rice field",
-        "Wheat": "wheat field",
-        "Maize": "corn field",
-        "Barley": "barley farm",
-        "Sorghum": "sorghum crop",
-        "Pearl Millet": "millet farm",
-        "Finger Millet": "ragi crop",
-        "Chickpea": "chickpea crop",
-        "Pigeon Pea": "pigeon pea farm",
-        "Green Gram": "mung bean crop",
-        "Black Gram": "black gram crop",
-        "Lentil": "lentil crop",
-        "Groundnut": "peanut farm",
-        "Mustard": "mustard field",
-        "Rapeseed": "rapeseed field",
-        "Sesame": "sesame crop",
-        "Sunflower": "sunflower field",
-        "Soybean": "soybean farm",
-        "Tomato": "tomato farm",
-        "Potato": "potato farm",
-        "Onion": "onion farm",
-        "Garlic": "garlic crop",
-        "Brinjal": "eggplant farm",
-        "Cabbage": "cabbage farm",
-        "Cauliflower": "cauliflower farm",
-        "Okra": "okra crop",
-        "Pumpkin": "pumpkin farm",
-        "Bottle Gourd": "bottle gourd farm",
-        "Bitter Gourd": "bitter gourd vine",
-        "Cucumber": "cucumber farm",
-        "Carrot": "carrot farm",
-        "Radish": "radish crop",
-        "Spinach": "spinach farm",
-        "Chilli": "chili pepper farm",
-        "Banana": "banana plantation",
-        "Mango": "mango orchard",
-        "Papaya": "papaya farm",
-        "Guava": "guava orchard",
-        "Pomegranate": "pomegranate farm",
-        "Orange": "orange orchard",
-        "Lemon": "lemon orchard",
-        "Apple": "apple orchard",
-        "Grapes": "grape vineyard",
-        "Pineapple": "pineapple farm",
-        "Turmeric": "turmeric crop",
-        "Ginger": "ginger farm",
-        "Coriander": "coriander herb farm",
-        "Cumin": "cumin crop",
-        "Fennel": "fennel field",
-        "Fenugreek": "fenugreek leaves farm",
-        "Cardamom": "cardamom plantation",
-        "Black Pepper": "black pepper vine",
-        "Clove": "clove spice plantation",
-        "Cinnamon": "cinnamon plantation",
-        "Sugarcane": "sugarcane field",
-        "Cotton": "cotton field",
-        "Jute": "jute crop",
-        "Coffee": "coffee plantation",
-        "Tea": "tea plantation",
-        "Rubber": "rubber plantation",
-        "Coconut": "coconut plantation",
-        "Arecanut": "arecanut plantation",
-        "Napier Grass": "fodder grass farm",
-        "Berseem": "berseem fodder crop",
-        "Lucerne": "lucerne alfalfa field",
-        "Sunn Hemp": "sunn hemp crop",
-        "Kenaf": "kenaf crop",
-        "Roselle": "roselle plant",
-        "Aloe Vera": "aloe vera farm",
-        "Ashwagandha": "ashwagandha medicinal crop",
-        "Mentha": "mint farm",
-        "Marigold": "marigold flower farm",
-        "Rose": "rose farm",
-        "Jasmine": "jasmine flowers farm",
-        "Cashew": "cashew plantation",
-        "Almond": "almond orchard",
-        "Walnut": "walnut orchard",
-    }
-    best_query = image_keywords.get(query, query)
-    safe_query = best_query.replace(" ", "%20")
-    # LoremFlickr provides reliable category image URLs without API keys.
-    return f"https://loremflickr.com/900/600/{safe_query}"
-
+    safe_query = query.replace(' ', '%20')
+    # Using Bing's dynamic thumbnail generator which acts as a reliable Google Images alternative
+    return f'https://tse1.mm.bing.net/th?q={safe_query}%20crop%20plant&w=400&h=400&c=7&rs=1&p=0&dpr=1&pid=1.7'
 
 def _seed_records() -> List[Dict[str, Any]]:
     base_crops = [
@@ -213,80 +132,63 @@ def _seed_records() -> List[Dict[str, Any]]:
     irrigation_cycle = ["Drip irrigation", "Furrow irrigation", "Sprinkler irrigation", "Rainfed with supplemental irrigation"]
     soil_cycle = ["Well-drained loamy soil", "Sandy loam soil", "Clay loam soil", "Alluvial soil"]
     rainfall_cycle = ["400-700 mm", "600-900 mm", "800-1200 mm", "300-500 mm"]
-    strain_tags = ["Traditional", "Hybrid", "Drought Tolerant", "Early Maturing", "High Yielding", "Regional Select"]
     regions = ["North India", "South India", "East India", "West India", "Central India", "Himalayan Region"]
 
     records: List[Dict[str, Any]] = []
     idx = 0
-    variant_index = 0
 
-    while len(records) < TARGET_CROP_COUNT:
-        for base in base_crops:
-            if len(records) >= TARGET_CROP_COUNT:
-                break
+    for base in base_crops:
+        region = regions[idx % len(regions)]
+        season = season_cycle[idx % len(season_cycle)]
+        climate = climate_cycle[idx % len(climate_cycle)]
+        irrigation = irrigation_cycle[idx % len(irrigation_cycle)]
+        soil = soil_cycle[idx % len(soil_cycle)]
+        rainfall = rainfall_cycle[idx % len(rainfall_cycle)]
+        idx += 1
 
-            strain = strain_tags[variant_index % len(strain_tags)]
-            region = regions[(variant_index + idx) % len(regions)]
-            idx += 1
+        display_name = base['name']
+        slug = _slugify(display_name)
 
-            display_name = f"{base['name']} - {strain} ({region})"
-            slug = _slugify(display_name)
-            season = season_cycle[idx % len(season_cycle)]
-            climate = climate_cycle[idx % len(climate_cycle)]
-            irrigation = irrigation_cycle[idx % len(irrigation_cycle)]
-            soil = soil_cycle[idx % len(soil_cycle)]
-            rainfall = rainfall_cycle[idx % len(rainfall_cycle)]
-
-            records.append(
-                {
-                    "slug": slug,
-                    "name": display_name,
-                    "base_crop": base["name"],
-                    "category": base["category"],
-                    "image": _build_image_url(base["name"]),
+        records.append(
+            {
+                "slug": slug,
+                "name": display_name,
+                "base_crop": base["name"],
+                "category": base["category"],
+                "image": _build_image_url(base["name"]),
+                "scientific_name": base["scientific_name"],
+                "local_names": base["local_names"],
+                "crop_family": base["family"],
+                "native_region": region,
+                "economic_importance": "High",
+                "water_requirement": "Moderate",
+                "growing_season": season,
+                "basic_details": {
                     "scientific_name": base["scientific_name"],
                     "local_names": base["local_names"],
                     "crop_family": base["family"],
-                    "native_region": region,
-                    "economic_importance": "High",
-                    "water_requirement": "Moderate",
-                    "growing_season": season,
-                    "basic_details": {
-                        "scientific_name": base["scientific_name"],
-                        "local_names": base["local_names"],
-                        "crop_family": base["family"],
-                    },
-                    "overview": f"{base['name']} is widely grown in {region}. It thrives in {climate} climates with {soil}.",
-                    "varieties": {
-                        "popular_cultivars": [
-                            f"{base['name']} Classic",
-                            f"{base['name']} Gold",
-                            f"{base['name']} Supreme",
-                        ],
-                        "hybrids": [
-                            f"{base['name']} Hybrid-1",
-                            f"{base['name']} Hybrid-2",
-                        ],
-                        "region_specific_strains": [
-                            f"{region} {base['name']} {strain}",
-                            f"{region} {base['name']} Local",
-                        ],
-                    },
-                    "popular_varieties": [
+                },
+                "overview": f"{base['name']} is widely grown in {region}. It thrives in {climate} climates with {soil}.",
+                "varieties": {
+                    "popular_cultivars": [
                         f"{base['name']} Classic",
+                        f"{base['name']} Gold",
+                        f"{base['name']} Supreme",
+                    ],
+                    "hybrids": [
                         f"{base['name']} Hybrid-1",
+                        f"{base['name']} Hybrid-2",
+                    ],
+                    "region_specific_strains": [
                         f"{region} {base['name']} Local",
                     ],
-                    "growth_cycle": {
-                        "timeline": [
-                            "Sowing: Day 0 - 15",
-                            "Vegetative Stage: Day 16 - 45",
-                            "Flowering Stage: Day 46 - 75",
-                            "Maturity: Day 76 - 110",
-                            "Harvesting: Day 111 - 145",
-                        ],
-                        "climate_requirements": f"{climate} climate with {season} season suitability.",
-                    },
+                },
+                "popular_varieties": [
+                    f"{base['name']} Classic",
+                    f"{base['name']} Hybrid-1",
+                    f"{region} {base['name']} Local",
+                ],
+                "growth_cycle": {
                     "timeline": [
                         "Sowing: Day 0 - 15",
                         "Vegetative Stage: Day 16 - 45",
@@ -294,24 +196,32 @@ def _seed_records() -> List[Dict[str, Any]]:
                         "Maturity: Day 76 - 110",
                         "Harvesting: Day 111 - 145",
                     ],
-                    "soil_water_needs": {
-                        "ideal_soil_type": soil,
-                        "irrigation_methods": irrigation,
-                        "rainfall_tolerance": rainfall,
-                    },
-                    "soil_water": f"{soil}; preferred method: {irrigation}; rainfall tolerance: {rainfall}.",
-                    "quick_facts": [
-                        f"Growing Season: {season}",
-                        f"Climate Requirement: {climate}",
-                        f"Ideal Soil: {soil}",
-                        f"Rainfall Tolerance: {rainfall}",
-                    ],
-                    "pests_diseases": f"Common issues in {base['name']} include blight, sucking pests, and stem borers depending on local conditions.",
-                    "nutrient_management": "Apply balanced NPK and micronutrients based on soil test for consistent yield.",
-                    "harvesting": f"Harvest when leaves turn yellow and moisture drops below 14%. Proper drying is crucial.",
-                }
-            )
-        variant_index += 1
+                    "climate_requirements": f"{climate} climate with {season} season suitability.",
+                },
+                "timeline": [
+                    "Sowing: Day 0 - 15",
+                    "Vegetative Stage: Day 16 - 45",
+                    "Flowering Stage: Day 46 - 75",
+                    "Maturity: Day 76 - 110",
+                    "Harvesting: Day 111 - 145",
+                ],
+                "soil_water_needs": {
+                    "ideal_soil_type": soil,
+                    "irrigation_methods": irrigation,
+                    "rainfall_tolerance": rainfall,
+                },
+                "soil_water": f"{soil}; preferred method: {irrigation}; rainfall tolerance: {rainfall}.",
+                "quick_facts": [
+                    f"Growing Season: {season}",
+                    f"Climate Requirement: {climate}",
+                    f"Ideal Soil: {soil}",
+                    f"Rainfall Tolerance: {rainfall}",
+                ],
+                "pests_diseases": f"Common issues in {base['name']} include blight, sucking pests, and stem borers depending on local conditions.",
+                "nutrient_management": "Apply balanced NPK and micronutrients based on soil test for consistent yield.",
+                "harvesting": f"Harvest when leaves turn yellow and moisture drops below 14%. Proper drying is crucial.",
+            }
+        )
 
     return records
 

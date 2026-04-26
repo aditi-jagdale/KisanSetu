@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fertilizer Directory - KisanSetu</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='fertilizer.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="topbar">
+  <div class="container nav-wrap">
+    <div class="brand">
+      <i class="fa-solid fa-seedling"></i>
+      <div>
+        <h1>KisanSetu</h1>
+        <p>Empowering Farmers, Enriching Future</p>
+      </div>
+    </div>
+          <nav class="main-nav">
+        <a  href="{{ url_for('index') }}">Home</a>
+        <a  href="{{ url_for('crop') }}">Crops</a>
+        <a  href="{{ url_for('farming') }}">Farming Techniques</a>
+        <a  href="{{ url_for('market') }}">Market Prices</a>
+        <a  href="{{ url_for('disease') }}">Disease Directory</a>
+        <a class="active" href="{{ url_for('fertilizer') }}">Fertilizers</a>
+        <a  href="{{ url_for('scheme') }}">Schemes</a>
+      </nav>
+    <div class="nav-actions">
+      <button><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button><i class="fa-regular fa-bell"></i><span class="badge-dot"></span></button>
+      {% if user %}
+        <div class="profile-circle">{{ initial }}</div>
+        <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-login"><i class="fa-regular fa-user"></i> Login</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<!-- ================= MAIN LAYOUT ================= -->
+<div class="container layout">
+  
+  <!-- LEFT SIDEBAR -->
+  <aside class="sidebar-left">
+    <div class="sidebar-nav">
+      <ul>
+        <li class="active"><a href="#" onclick="filterCategory('All Types', this); return false;"><i class="fa-solid fa-box-open"></i> All Fertilizers</a></li>
+        <li><a href="#" onclick="filterCategory('Organic', this); return false;"><i class="fa-solid fa-leaf"></i> Organic Fertilizers</a></li>
+        <li><a href="#" onclick="filterCategory('Chemical', this); return false;"><i class="fa-solid fa-flask"></i> Chemical Fertilizers</a></li>
+        <li><a href="#" onclick="filterCategory('Bio', this); return false;"><i class="fa-solid fa-microbe"></i> Bio Fertilizers</a></li>
+        <li><a href="#" onclick="filterCategory('Micronutrients', this); return false;"><i class="fa-solid fa-droplet"></i> Micronutrients</a></li>
+      </ul>
+    </div>
+
+    <div class="filter-box">
+      <div class="filter-header">
+        <h3><i class="fa-solid fa-filter"></i> Filters</h3>
+        <a href="#" class="reset-link" onclick="resetFilters(event)">Reset</a>
+      </div>
+      
+      <div class="filter-group">
+        <label>Fertilizer Type</label>
+        <select id="filter-type" onchange="fetchData()">
+          <option>All Types</option>
+          <option>Chemical</option>
+          <option>Organic</option>
+          <option>Bio</option>
+          <option>Micronutrients</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Nutrient</label>
+        <select id="filter-nutrient" onchange="fetchData()">
+          <option>All Nutrients</option>
+          <option>Nitrogen</option>
+          <option>Phosphorus</option>
+          <option>Potassium</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Form</label>
+        <select id="filter-form" onchange="fetchData()">
+          <option>All Forms</option>
+          <option>Granular</option>
+          <option>Powder</option>
+          <option>Liquid</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Price Range (₹/bag)</label>
+        <input type="range" min="0" max="5000" value="5000" class="price-slider" disabled>
+        <div class="range-labels">
+          <span>₹0</span>
+          <span>₹5,000+</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Brand</label>
+        <select id="filter-brand" onchange="fetchData()">
+          <option>All Brands</option>
+          <option>IFFCO</option>
+          <option>Coromandel</option>
+          <option>Chambal Fertilisers</option>
+          <option>Rashtriya Chemicals</option>
+          <option>Nagarjuna</option>
+          <option>Local Organic</option>
+        </select>
+      </div>
+      
+      <button class="btn-primary full-width" onclick="fetchData()">Apply Filters</button>
+    </div>
+    
+    <div class="help-box">
+      <h4><i class="fa-regular fa-lightbulb"></i> Need Help Choosing?</h4>
+      <p>Let our AI assistant recommend the right fertilizer for your crops.</p>
+      <button class="btn-outline-green" onclick="openAIModal()"><i class="fa-solid fa-wand-magic-sparkles"></i> Get Recommendation</button>
+    </div>
+  </aside>
+
+  <!-- CENTER CONTENT -->
+  <main class="main-content">
+    
+    <div class="header-section">
+      <div class="header-text">
+        <h2>Fertilizers</h2>
+        <p>Explore a wide range of fertilizers to improve soil health and boost crop productivity.</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat">
+          <i class="fa-solid fa-box-open"></i>
+          <div><span id="total-fert">150+</span><small>Fertilizers<br>Available</small></div>
+        </div>
+        <div class="stat">
+          <i class="fa-solid fa-award"></i>
+          <div><span>50+</span><small>Brands</small></div>
+        </div>
+        <div class="stat">
+          <i class="fa-solid fa-users"></i>
+          <div><span>250+</span><small>Retailers</small></div>
+        </div>
+        <div class="stat">
+          <i class="fa-solid fa-map-location-dot"></i>
+          <div><span>24</span><small>States Covered</small></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sub-tabs">
+      <div class="tabs-list" id="main-tabs">
+        <button class="active" onclick="filterCategory('All Types', this)">All Fertilizers</button>
+        <button onclick="filterCategory('Organic', this)">Organic</button>
+        <button onclick="filterCategory('Chemical', this)">Chemical</button>
+        <button onclick="filterCategory('Bio', this)">Bio</button>
+        <button onclick="filterCategory('Micronutrients', this)">Micronutrients</button>
+      </div>
+      <div class="sort-by">
+        <span>Sort by</span>
+        <select>
+          <option>Popular</option>
+          <option>Price: Low to High</option>
+          <option>Price: High to Low</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- FERTILIZER CARDS -->
+    <div class="cards-grid" id="fertilizer-cards">
+      <!-- Populated via JS -->
+    </div>
+    
+    <div style="text-align: center; margin: 20px 0 40px 0;">
+      <button class="btn-view-all" onclick="openModal('allPricesModal')">View All Fertilizers &rarr;</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-section panel">
+      <h3>Fertilizer Price List</h3>
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fertilizer Name</th>
+              <th>Type</th>
+              <th>Nutrient Composition</th>
+              <th>Form</th>
+              <th>Pack Size</th>
+              <th>Price (₹)</th>
+              <th>Price Trend</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="fertilizer-table-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+      <div style="text-align: center; margin-top: 16px;">
+        <button class="btn-view-all" onclick="openModal('allPricesModal')">View All Fertilizers &rarr;</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- RIGHT SIDEBAR -->
+  <aside class="sidebar-right">
+    
+    <!-- CALCULATOR -->
+    <div class="panel calc-panel">
+      <h3>Fertilizer Calculator</h3>
+      <p class="desc">Calculate the right amount of fertilizer for your crop.</p>
+      
+      <div class="filter-group">
+        <label>Select Crop</label>
+        <select id="calc-crop">
+          <option value="wheat">Wheat</option>
+          <option value="rice">Rice</option>
+          <option value="cotton">Cotton</option>
+          <option value="maize">Maize</option>
+          <option value="sugarcane">Sugarcane</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Area</label>
+        <div style="display:flex; gap: 10px;">
+          <input type="number" id="calc-area" value="1" min="1" style="flex:1; padding:10px; border:1px solid var(--border); border-radius:8px;">
+          <select style="width:80px; padding:10px; border:1px solid var(--border); border-radius:8px;">
+            <option>Acre</option>
+          </select>
+        </div>
+      </div>
+      
+      <button class="btn-primary full-width" onclick="calculateFertilizer()">Calculate Required Fertilizer</button>
+    </div>
+    
+    <!-- NUTRIENT GUIDE -->
+    <div class="panel nutrient-guide">
+      <h3>Nutrient Guide</h3>
+      <p class="desc">Learn about essential nutrients for your crops.</p>
+      
+      <div class="guide-item">
+        <div class="guide-icon n">N</div>
+        <div class="guide-text">
+          <h4>N (Nitrogen)</h4>
+          <p>Promotes leafy growth and overall vigor.</p>
+        </div>
+      </div>
+      
+      <div class="guide-item">
+        <div class="guide-icon p">P</div>
+        <div class="guide-text">
+          <h4>P (Phosphorus)</h4>
+          <p>Helps in root development and flowering.</p>
+        </div>
+      </div>
+      
+      <div class="guide-item">
+        <div class="guide-icon k">K</div>
+        <div class="guide-text">
+          <h4>K (Potassium)</h4>
+          <p>Improves yield and disease resistance.</p>
+        </div>
+      </div>
+      
+      <div class="guide-item">
+        <div class="guide-icon s">S</div>
+        <div class="guide-text">
+          <h4>S (Sulfur)</h4>
+          <p>Essential for protein synthesis and growth.</p>
+        </div>
+      </div>
+      
+      <a href="#" class="view-detailed" onclick="openNutrientGuideModal(); return false;">View Full Nutrient Guide &rarr;</a>
+    </div>
+    
+    <!-- TOP BRANDS -->
+    <div class="panel top-brands">
+      <h3>Top Brands</h3>
+      <p class="desc">Explore trusted fertilizer brands.</p>
+      
+      <ul class="brand-list">
+        <li><span>IFFCO</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Coromandel</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Chambal Fertilisers</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Rashtriya Chemicals</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Nagarjuna Fertilisers</span> <i class="fa-solid fa-angle-right"></i></li>
+      </ul>
+      
+      <a href="#" class="view-detailed" onclick="openAllBrandsModal(); return false;">View All Brands &rarr;</a>
+    </div>
+    
+    <!-- NEED ASSISTANCE -->
+    <div class="panel support-panel">
+      <h3>Need Assistance?</h3>
+      <p>Our experts are here to help you choose the right fertilizer.</p>
+      <button class="btn-outline-gray full-width" onclick="openSupportModal()"><i class="fa-regular fa-message"></i> Contact Expert</button>
+    </div>
+
+  </aside>
+
+</div> <!-- End Layout -->
+
+<!-- ================= MODALS & TOASTS ================= -->
+<div id="toast-container" class="toast-container"></div>
+
+<!-- View All Fertilizers Modal -->
+<div id="allPricesModal" class="market-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>All Fertilizer Prices</h3>
+      <button class="btn-close" onclick="closeModal('allPricesModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-responsive modal-table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Fertilizer Name</th>
+              <th>Type</th>
+              <th>Nutrient</th>
+              <th>Form</th>
+              <th>Size</th>
+              <th>Price (₹)</th>
+              <th>Trend</th>
+            </tr>
+          </thead>
+          <tbody id="modal-table-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Calculator Result Modal -->
+<div id="calcModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>Calculator Results</h3>
+      <button class="btn-close" onclick="closeModal('calcModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="calc-body">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- AI Recommendation Modal -->
+<div id="aiModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>AI Fertilizer Assistant</h3>
+      <button class="btn-close" onclick="closeModal('aiModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="filter-group">
+        <label>What crop are you planting?</label>
+        <input type="text" id="ai-crop" placeholder="e.g. Tomato" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px;">
+      </div>
+      <div class="filter-group">
+        <label>Soil Type</label>
+        <select id="ai-soil" style="width:100%; padding:10px; border:1px solid var(--border); border-radius:8px;">
+          <option>Clay</option>
+          <option>Sandy</option>
+          <option>Loamy</option>
+          <option>Silt</option>
+        </select>
+      </div>
+      <button class="btn-primary full-width" onclick="generateAIRecommendation()">Get Recommendation</button>
+      <div id="ai-result" style="margin-top:20px; display:none; background:#f0fdf4; padding:15px; border-radius:8px; border:1px solid #bbf7d0;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Price Details Modal -->
+<div id="priceDetailsModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>Pricing Details</h3>
+      <button class="btn-close" onclick="closeModal('priceDetailsModal')">&times;</button>
+    </div>
+    <div class="modal-body" id="price-details-body">
+      <!-- Populated via JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Nutrient Guide Modal -->
+<div id="nutrientGuideModal" class="market-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Comprehensive Nutrient Guide</h3>
+      <button class="btn-close" onclick="closeModal('nutrientGuideModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <h4 style="color:var(--primary-dark);">Macronutrients</h4>
+      <ul style="line-height:1.6; margin-bottom:20px; color:var(--text-muted);">
+        <li><strong>Nitrogen (N):</strong> Essential for vegetative growth, protein synthesis, and chlorophyll formation.</li>
+        <li><strong>Phosphorus (P):</strong> Crucial for root development, flowering, and energy transfer (ATP).</li>
+        <li><strong>Potassium (K):</strong> Regulates water use, improves disease resistance, and aids in fruit formation.</li>
+      </ul>
+      <h4 style="color:var(--primary-dark);">Secondary Nutrients</h4>
+      <ul style="line-height:1.6; margin-bottom:20px; color:var(--text-muted);">
+        <li><strong>Calcium (Ca):</strong> Strengthens cell walls and prevents disorders like blossom end rot.</li>
+        <li><strong>Magnesium (Mg):</strong> The central atom in chlorophyll; essential for photosynthesis.</li>
+        <li><strong>Sulfur (S):</strong> Required for the synthesis of certain amino acids and proteins.</li>
+      </ul>
+      <h4 style="color:var(--primary-dark);">Micronutrients</h4>
+      <ul style="line-height:1.6; color:var(--text-muted);">
+        <li><strong>Zinc (Zn):</strong> Necessary for enzyme systems and growth hormone production.</li>
+        <li><strong>Iron (Fe):</strong> Important for chlorophyll synthesis.</li>
+        <li><strong>Boron (B):</strong> Critical for cell wall formation, cell division, and reproduction.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- All Brands Modal -->
+<div id="allBrandsModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>All Trusted Brands</h3>
+      <button class="btn-close" onclick="closeModal('allBrandsModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <ul class="brand-list">
+        <li><span>IFFCO</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Coromandel</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Chambal Fertilisers</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Rashtriya Chemicals (RCF)</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Nagarjuna Fertilisers</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Gujarat State Fertilizers (GSFC)</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Zuari Agro Chemicals</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Tata Chemicals (Paras)</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Mangalore Chemicals</span> <i class="fa-solid fa-angle-right"></i></li>
+        <li><span>Local Organic Suppliers</span> <i class="fa-solid fa-angle-right"></i></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Support Chat Modal -->
+<div id="supportModal" class="market-modal">
+  <div class="modal-content small">
+    <div class="modal-header">
+      <h3>Expert Assistance</h3>
+      <button class="btn-close" onclick="closeModal('supportModal')">&times;</button>
+    </div>
+    <div class="modal-body" style="display:flex; flex-direction:column; height:300px;">
+      <div id="chat-box" style="flex:1; background:#f8fafc; border:1px solid var(--border); border-radius:8px; padding:10px; overflow-y:auto; margin-bottom:10px;">
+        <div style="background:var(--surface); padding:8px 12px; border-radius:12px; border:1px solid var(--border); display:inline-block; margin-bottom:8px; max-width:80%;">
+          Hello! I am an agricultural expert. How can I assist you with fertilizer choices today?
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <input type="text" id="chat-input" placeholder="Type your message..." style="flex:1; padding:10px; border:1px solid var(--border); border-radius:8px;">
+        <button class="btn-primary" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let allFetchedData = [];
+
+// UI Helpers
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${message}`;
+  container.appendChild(toast);
+  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+// Data Fetching
+async function fetchData() {
+  const f_type = document.getElementById('filter-type').value;
+  const nutrient = document.getElementById('filter-nutrient').value;
+  const form = document.getElementById('filter-form').value;
+  const brand = document.getElementById('filter-brand').value;
+
+  try {
+    const res = await fetch(`/api/fertilizers?type=${encodeURIComponent(f_type)}&nutrient=${encodeURIComponent(nutrient)}&form=${encodeURIComponent(form)}&brand=${encodeURIComponent(brand)}`);
+    const data = await res.json();
+    
+    allFetchedData = data;
+    document.getElementById('total-fert').innerText = data.length > 0 ? `${data.length}+` : "0";
+    
+    renderCards(data);
+    renderTable(data);
+    renderModalTable(data);
+    
+  } catch (err) {
+    console.error("Error fetching fertilizer data:", err);
+  }
+}
+
+function filterCategory(type, element) {
+  // Update sidebar list styling
+  const sidebarLinks = document.querySelectorAll('.sidebar-nav li');
+  sidebarLinks.forEach(li => li.classList.remove('active'));
+  if(element.parentElement.tagName === 'LI') {
+      element.parentElement.classList.add('active');
+  }
+
+  // Update center tabs styling
+  const centerTabs = document.querySelectorAll('#main-tabs button');
+  centerTabs.forEach(btn => btn.classList.remove('active'));
+  
+  // Find matching center tab if any
+  centerTabs.forEach(btn => {
+      if(btn.innerText.includes(type) || (type==='All Types' && btn.innerText==='All Fertilizers')) {
+          btn.classList.add('active');
+      }
+  });
+
+  document.getElementById('filter-type').value = type;
+  fetchData();
+}
+
+function resetFilters(e) {
+  if(e) e.preventDefault();
+  document.getElementById('filter-type').value = 'All Types';
+  document.getElementById('filter-nutrient').value = 'All Nutrients';
+  document.getElementById('filter-form').value = 'All Forms';
+  document.getElementById('filter-brand').value = 'All Brands';
+  fetchData();
+}
+
+// Rendering
+function renderCards(data) {
+  const container = document.getElementById('fertilizer-cards');
+  container.innerHTML = "";
+  
+  if(data.length === 0) {
+      container.innerHTML = "<p>No fertilizers found matching your criteria.</p>";
+      return;
+  }
+  
+  const displayData = data.slice(0, 4); // Show top 4 cards
+  
+  displayData.forEach(item => {
+    let typeClass = item.type.toLowerCase();
+    
+    const card = document.createElement('div');
+    card.className = 'fert-card';
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="badge ${typeClass}">${item.type}</span>
+        <button class="btn-favorite" onclick="showToast('Added to favorites')"><i class="fa-regular fa-heart"></i></button>
+      </div>
+      <h3>${item.name}</h3>
+      <p class="nut-info">Nutrient: ${item.nutrient_composition}</p>
+      <p class="form-info">Form: ${item.form}</p>
+      <div class="price-box">
+        <h4>₹${item.price.toLocaleString()} <span>/ ${item.pack_size}</span></h4>
+      </div>
+      <button class="btn-text" onclick="openPriceDetails('${item.name.replace(/'/g, "\\'")}')">View Prices &rarr;</button>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('fertilizer-table-body');
+  tbody.innerHTML = "";
+  
+  const displayData = data.slice(0, 8); // Show 8 in table
+  
+  displayData.forEach(item => {
+    const trendColor = item.trend.includes('+') ? '#16a34a' : '#dc2626';
+    const trendIcon = item.trend.includes('+') ? 'fa-arrow-up' : 'fa-arrow-down';
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight: 500;">${item.name}</td>
+      <td>${item.type}</td>
+      <td>${item.nutrient_composition}</td>
+      <td>${item.form}</td>
+      <td>${item.pack_size}</td>
+      <td>₹${item.price.toLocaleString()}</td>
+      <td style="color: ${trendColor}; font-weight: 500; font-size: 13px;">
+        <i class="fa-solid ${trendIcon}" style="font-size: 10px;"></i> ${item.trend.replace('+', '').replace('-', '')}
+      </td>
+      <td><button class="btn-action" onclick="openPriceDetails('${item.name.replace(/'/g, "\\'")}')">View Prices</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderModalTable(data) {
+  const tbody = document.getElementById('modal-table-body');
+  tbody.innerHTML = "";
+  
+  data.forEach(item => {
+    const trendColor = item.trend.includes('+') ? '#16a34a' : '#dc2626';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="font-weight: 500;">${item.name}</td>
+      <td>${item.type}</td>
+      <td>${item.nutrient_composition}</td>
+      <td>${item.form}</td>
+      <td>${item.pack_size}</td>
+      <td>₹${item.price.toLocaleString()}</td>
+      <td style="color: ${trendColor}; font-weight: 500;">${item.trend}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// Calculator Logic
+function calculateFertilizer() {
+  const crop = document.getElementById('calc-crop').value;
+  const area = parseFloat(document.getElementById('calc-area').value);
+  
+  if(!area || area <= 0) {
+      showToast("Please enter a valid area.");
+      return;
+  }
+  
+  // Very rough approximation of required nutrients per acre (kg)
+  const req = {
+      'wheat': { n: 50, p: 25, k: 15 },
+      'rice': { n: 40, p: 20, k: 20 },
+      'cotton': { n: 60, p: 30, k: 30 },
+      'maize': { n: 60, p: 25, k: 20 },
+      'sugarcane': { n: 100, p: 40, k: 40 }
+  };
+  
+  const cData = req[crop];
+  
+  const body = document.getElementById('calc-body');
+  body.innerHTML = `
+    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 8px; text-align: center;">
+      <h4 style="margin: 0 0 10px 0; color: #166534;">Estimated Requirements for ${area} Acre(s) of ${crop.charAt(0).toUpperCase() + crop.slice(1)}</h4>
+      
+      <div style="display: flex; justify-content: space-around; margin-top: 16px;">
+        <div>
+          <div style="font-size: 24px; font-weight: 700; color: #15803d;">${cData.n * area} kg</div>
+          <div style="font-size: 12px; color: #64748b;">Nitrogen (N)</div>
+        </div>
+        <div>
+          <div style="font-size: 24px; font-weight: 700; color: #0369a1;">${cData.p * area} kg</div>
+          <div style="font-size: 12px; color: #64748b;">Phosphorus (P)</div>
+        </div>
+        <div>
+          <div style="font-size: 24px; font-weight: 700; color: #7e22ce;">${cData.k * area} kg</div>
+          <div style="font-size: 12px; color: #64748b;">Potassium (K)</div>
+        </div>
+      </div>
+      
+      <p style="font-size: 12px; color: #64748b; margin-top: 20px;">* This is a general approximation. Please conduct a soil test for accurate recommendations.</p>
+    </div>
+  `;
+  
+  openModal('calcModal');
+}
+
+// Additional Modal Logics
+function openAIModal() {
+  document.getElementById('ai-crop').value = '';
+  document.getElementById('ai-result').style.display = 'none';
+  openModal('aiModal');
+}
+
+function generateAIRecommendation() {
+  const crop = document.getElementById('ai-crop').value;
+  const soil = document.getElementById('ai-soil').value;
+  
+  if(!crop) { showToast("Please enter a crop name"); return; }
+  
+  const resBox = document.getElementById('ai-result');
+  resBox.style.display = 'block';
+  resBox.innerHTML = `
+    <h4 style="margin:0 0 10px 0; color:var(--primary-dark);"><i class="fa-solid fa-check-circle"></i> AI Recommendation</h4>
+    <p style="margin:0; font-size:14px; line-height:1.5;">For <strong>${crop}</strong> in <strong>${soil}</strong> soil, we recommend starting with a balanced <strong>NPK 19:19:19</strong> at the basal stage. Supplement with <strong>Zinc Sulfate</strong> if the soil tests low in micronutrients. For better soil health over time, consider adding <strong>Vermicompost</strong>.</p>
+  `;
+}
+
+function openPriceDetails(name) {
+  const item = allFetchedData.find(d => d.name === name);
+  if(!item) return;
+  
+  const body = document.getElementById('price-details-body');
+  const trendColor = item.trend.includes('+') ? '#16a34a' : '#dc2626';
+  const trendIcon = item.trend.includes('+') ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down';
+  
+  body.innerHTML = `
+    <div style="text-align:center; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid var(--border);">
+      <h2 style="margin:0 0 10px 0; color:var(--primary-dark);">${item.name}</h2>
+      <div style="font-size:32px; font-weight:700; color:var(--text-main);">₹${item.price.toLocaleString()}</div>
+      <div style="color:${trendColor}; font-weight:600; margin-top:5px;"><i class="fa-solid ${trendIcon}"></i> ${item.trend} in last 30 days</div>
+    </div>
+    
+    <div style="margin-top:20px; line-height:1.6; font-size:14px; color:var(--text-muted);">
+      <p><strong>Brand:</strong> ${item.brand}</p>
+      <p><strong>Type:</strong> ${item.type}</p>
+      <p><strong>Nutrients:</strong> ${item.nutrient_composition}</p>
+      <p><strong>Packaging:</strong> ${item.pack_size} ${item.form}</p>
+    </div>
+    
+    <button class="btn-primary full-width" style="margin-top:20px;" onclick="showToast('Added to cart!'); closeModal('priceDetailsModal');">Order Now</button>
+  `;
+  openModal('priceDetailsModal');
+}
+
+function openNutrientGuideModal() { openModal('nutrientGuideModal'); }
+function openAllBrandsModal() { openModal('allBrandsModal'); }
+function openSupportModal() { 
+  document.getElementById('chat-input').value = '';
+  document.getElementById('chat-box').innerHTML = `
+    <div style="background:var(--surface); padding:8px 12px; border-radius:12px; border:1px solid var(--border); display:inline-block; margin-bottom:8px; max-width:80%;">
+      Hello! I am an agricultural expert. How can I assist you with fertilizer choices today?
+    </div>
+  `;
+  openModal('supportModal'); 
+}
+
+function sendChatMessage() {
+  const input = document.getElementById('chat-input');
+  const val = input.value.trim();
+  if(!val) return;
+  
+  const box = document.getElementById('chat-box');
+  
+  // User message
+  box.innerHTML += `
+    <div style="text-align:right;">
+      <div style="background:var(--primary-dark); color:white; padding:8px 12px; border-radius:12px; display:inline-block; margin-bottom:8px; max-width:80%; text-align:left;">
+        ${val}
+      </div>
+    </div>
+  `;
+  
+  input.value = '';
+  box.scrollTop = box.scrollHeight;
+  
+  // Fake response
+  setTimeout(() => {
+    box.innerHTML += `
+      <div>
+        <div style="background:var(--surface); padding:8px 12px; border-radius:12px; border:1px solid var(--border); display:inline-block; margin-bottom:8px; max-width:80%;">
+          That's a great question! I'm currently assisting other farmers, but I have noted your query and will provide a detailed response shortly.
+        </div>
+      </div>
+    `;
+    box.scrollTop = box.scrollHeight;
+  }, 1000);
+}
+
+// Init
+document.addEventListener("DOMContentLoaded", fetchData);
+</script>
+
+</body>
+</html>

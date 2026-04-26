@@ -1,0 +1,489 @@
+/* =========================================
+   DISEASE DIRECTORY - MOCKUP STYLING
+========================================= */
+
+:root {
+  --primary: #2a8b5e;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border: #e5e7eb;
+}
+
+body {
+  background-color: var(--bg);
+  font-family: 'Inter', sans-serif;
+}
+
+.disease-layout {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.disease-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.disease-header h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  background: var(--surface);
+  width: 300px;
+}
+
+.search-box i {
+  color: var(--text-muted);
+  margin-right: 10px;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--primary);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Hero Card */
+.disease-hero {
+  background-color: #f4fbf7;
+  border: 1px solid #e0f2e9;
+  border-radius: 12px;
+  padding: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.hero-text h3 {
+  font-size: 20px;
+  color: var(--primary);
+  margin: 0 0 10px 0;
+  font-weight: 600;
+}
+
+.hero-text p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 15px;
+}
+
+.hero-stat {
+  background: var(--surface);
+  border: 1px solid #e0f2e9;
+  border-radius: 12px;
+  padding: 20px 30px;
+  text-align: center;
+}
+
+.hero-stat span {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.hero-stat strong {
+  display: block;
+  font-size: 28px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+/* Categories */
+.category-section h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+}
+
+.category-pills {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.pill {
+  padding: 8px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pill.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* List Area */
+.list-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.disease-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.disease-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.disease-info {
+  flex: 2;
+  padding-right: 20px;
+}
+
+.disease-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.disease-info p {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.disease-meta {
+  flex: 1;
+  display: flex;
+  gap: 40px;
+}
+
+.meta-group span {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.meta-group strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.meta-group.category strong {
+  color: var(--primary);
+}
+
+.disease-action {
+  flex-shrink: 0;
+}
+
+.btn-view {
+  padding: 8px 20px;
+  border: 1px solid #c2e0d1;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-view:hover {
+  background: #f4fbf7;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 30px;
+  padding-top: 20px;
+}
+
+.page-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-numbers {
+  display: flex;
+  gap: 8px;
+}
+
+.page-num {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.page-num.active {
+  background: var(--primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.page-num:hover:not(.active) {
+  background: #f1f5f9;
+}
+
+/* Footer Note */
+.footer-note {
+  background: #f4fbf7;
+  border: 1px solid #e0f2e9;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-note i {
+  color: var(--primary);
+  font-size: 20px;
+}
+
+.footer-note div strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-main);
+  margin-bottom: 4px;
+}
+
+.footer-note div span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Modal Overlay */
+.disease-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.disease-modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+  padding: 30px 40px 20px 40px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: 0.2s;
+}
+
+.modal-close:hover {
+  color: #ef4444;
+}
+
+.modal-header h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  color: var(--text-main);
+  margin: 0 0 12px 0;
+}
+
+.modal-tags {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-tag {
+  background: #f1f5f9;
+  color: var(--text-main);
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.modal-tag.category {
+  background: #e0f2e9;
+  color: var(--primary);
+  border-color: #c2e0d1;
+}
+
+.modal-body {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+  padding: 30px 40px;
+}
+
+@media (max-width: 768px) {
+  .modal-body {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+}
+
+.modal-main .section {
+  margin-bottom: 30px;
+}
+
+.modal-main .section:last-child {
+  margin-bottom: 0;
+}
+
+.modal-main h4 {
+  font-size: 18px;
+  color: var(--primary);
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal-main p {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.highlight-box {
+  background: #f8fafc;
+  border-left: 4px solid var(--primary);
+  padding: 16px;
+  border-radius: 4px 8px 8px 4px;
+}
+
+.modal-side {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  height: fit-content;
+}
+
+.side-stat {
+  margin-bottom: 20px;
+}
+
+.side-stat:last-child {
+  margin-bottom: 0;
+}
+
+.side-stat span {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.side-stat strong {
+  display: block;
+  font-size: 14px;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.side-stat.critical strong {
+  color: #ef4444;
+}

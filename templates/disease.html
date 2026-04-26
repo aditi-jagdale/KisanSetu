@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Disease Directory - KisanSetu</title>
+  
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='disease.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<header class="topbar">
+  <div class="container nav-wrap">
+    <div class="brand">
+      <i class="fa-solid fa-seedling"></i>
+      <div>
+        <h1>KisanSetu</h1>
+        <p>Empowering Farmers, Enriching Future</p>
+      </div>
+    </div>
+          <nav class="main-nav">
+        <a  href="{{ url_for('index') }}">Home</a>
+        <a  href="{{ url_for('crop') }}">Crops</a>
+        <a  href="{{ url_for('farming') }}">Farming Techniques</a>
+        <a  href="{{ url_for('market') }}">Market Prices</a>
+        <a class="active" href="{{ url_for('disease') }}">Disease Directory</a>
+        <a  href="{{ url_for('fertilizer') }}">Fertilizers</a>
+        <a  href="{{ url_for('scheme') }}">Schemes</a>
+      </nav>
+    <div class="nav-actions">
+      <button><i class="fa-solid fa-magnifying-glass"></i></button>
+      <button><i class="fa-regular fa-bell"></i></button>
+      {% if user %}
+        <div class="profile-circle">{{ initial }}</div>
+        <a href="{{ url_for('logout') }}" class="btn-login" style="margin-left: 10px;">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}" class="btn-login"><i class="fa-regular fa-user"></i> Login</a>
+        <a href="{{ url_for('signup') }}" class="btn-signup">Sign Up</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="disease-layout">
+    <!-- Header -->
+    <div class="disease-header">
+        <h2>Disease</h2>
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Search disease..." onkeyup="filterDiseases()">
+            </div>
+            <button class="filter-btn">
+                <i class="fa-solid fa-filter"></i> Filter <i class="fa-solid fa-chevron-down" style="font-size: 12px;"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Hero Card -->
+    <div class="disease-hero">
+        <div class="hero-text">
+            <h3>Learn about diseases and stay informed</h3>
+            <p>Browse common diseases, understand their causes, symptoms, and preventive measures.</p>
+        </div>
+        <div class="hero-stat">
+            <span>Total Diseases</span>
+            <strong>120+</strong>
+        </div>
+    </div>
+
+    <!-- Category Browser -->
+    <div class="category-section">
+        <h4>Browse by Category</h4>
+        <div class="category-pills">
+            <button class="pill active" onclick="setCategory('All', this)">All</button>
+            <button class="pill" onclick="setCategory('Fungal', this)">Fungal</button>
+            <button class="pill" onclick="setCategory('Bacterial', this)">Bacterial</button>
+            <button class="pill" onclick="setCategory('Viral', this)">Viral</button>
+            <button class="pill" onclick="setCategory('Pest', this)">Pest</button>
+            <button class="pill" onclick="setCategory('Deficiencies', this)">Deficiencies</button>
+        </div>
+    </div>
+
+    <!-- List Area -->
+    <h3 class="list-header">All Diseases</h3>
+    <div class="disease-list" id="diseaseList">
+        <!-- JS Injected Cards -->
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <button class="page-btn" id="prevBtn" onclick="changePage(-1)"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+        <div class="page-numbers" id="pageNumbers">
+            <!-- JS Injected Page Numbers -->
+        </div>
+        <button class="page-btn" id="nextBtn" onclick="changePage(1)">Next <i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+    <!-- Footer Note -->
+    <div class="footer-note">
+        <i class="fa-regular fa-circle-info"></i>
+        <div>
+            <strong>This information is for educational purposes only.</strong>
+            <span>For agronomic advice, please consult a qualified agricultural professional.</span>
+        </div>
+    </div>
+</main>
+
+<!-- Modal Overlay -->
+<div class="disease-modal-overlay" id="diseaseModal">
+    <div class="disease-modal">
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-times"></i></button>
+        <div class="modal-header">
+            <h2 id="modalName">Disease Name</h2>
+            <div class="modal-tags">
+                <span class="modal-tag category" id="modalCategory">Category</span>
+                <span class="modal-tag" id="modalPrevalence">Prevalence</span>
+            </div>
+        </div>
+        <div class="modal-body">
+            <div class="modal-main">
+                <div class="section">
+                    <h4><i class="fa-solid fa-microscope"></i> Symptoms</h4>
+                    <p id="modalSymptoms">...</p>
+                </div>
+                <div class="section">
+                    <h4><i class="fa-solid fa-flask-vial"></i> Control Methods</h4>
+                    <p class="highlight-box" id="modalControl">...</p>
+                </div>
+                <div class="section">
+                    <h4><i class="fa-solid fa-shield-virus"></i> Preventive Measures</h4>
+                    <p id="modalPreventive">...</p>
+                </div>
+            </div>
+            <div class="modal-side">
+                <div class="side-stat">
+                    <span>Causal Agent</span>
+                    <strong id="modalAgent">...</strong>
+                </div>
+                <div class="side-stat">
+                    <span>Spread Via</span>
+                    <strong id="modalSpread">...</strong>
+                </div>
+                <div class="side-stat">
+                    <span>Seasonality</span>
+                    <strong id="modalSeasonality">...</strong>
+                </div>
+                <div class="side-stat critical">
+                    <span>Potential Impact</span>
+                    <strong id="modalImpact">...</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allDiseases = [];
+let filteredDiseases = [];
+let currentCategory = 'All';
+let currentPage = 1;
+const itemsPerPage = 5;
+
+// Load Data
+async function loadData() {
+    try {
+        const response = await fetch('/api/diseases?limit=200');
+        allDiseases = await response.json();
+        filteredDiseases = [...allDiseases];
+        renderList();
+        renderPagination();
+    } catch (error) {
+        console.error("Error loading diseases:", error);
+    }
+}
+
+function setCategory(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    currentPage = 1;
+    filterDiseases();
+}
+
+function filterDiseases() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    
+    filteredDiseases = allDiseases.filter(d => {
+        const matchesCategory = currentCategory === 'All' || d.category === currentCategory;
+        const matchesSearch = d.name.toLowerCase().includes(query) || d.description.toLowerCase().includes(query);
+        return matchesCategory && matchesSearch;
+    });
+    
+    currentPage = 1;
+    renderList();
+    renderPagination();
+}
+
+function renderList() {
+    const container = document.getElementById('diseaseList');
+    container.innerHTML = '';
+    
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedItems = filteredDiseases.slice(start, end);
+    
+    if (paginatedItems.length === 0) {
+        container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 40px;">No diseases found matching your criteria.</p>';
+        return;
+    }
+    
+    paginatedItems.forEach(d => {
+        container.innerHTML += `
+            <div class="disease-card">
+                <div class="disease-info">
+                    <h4>${d.name}</h4>
+                    <p>${d.description}</p>
+                </div>
+                <div class="disease-meta">
+                    <div class="meta-group category">
+                        <span>Category</span>
+                        <strong>${d.category}</strong>
+                    </div>
+                    <div class="meta-group">
+                        <span>Prevalence</span>
+                        <strong>${d.prevalence}</strong>
+                    </div>
+                </div>
+                <div class="disease-action">
+                    <button class="btn-view" onclick='openModal(${JSON.stringify(d).replace(/'/g, "&#39;")})'>View Details <i class="fa-solid fa-chevron-right" style="font-size:12px;"></i></button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function renderPagination() {
+    const totalPages = Math.ceil(filteredDiseases.length / itemsPerPage);
+    const numbersContainer = document.getElementById('pageNumbers');
+    numbersContainer.innerHTML = '';
+    
+    document.getElementById('prevBtn').disabled = currentPage === 1 || totalPages === 0;
+    document.getElementById('nextBtn').disabled = currentPage === totalPages || totalPages === 0;
+    
+    // Simple pagination logic (showing max 5 page numbers)
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const isActive = i === currentPage ? 'active' : '';
+        numbersContainer.innerHTML += `<div class="page-num ${isActive}" onclick="goToPage(${i})">${i}</div>`;
+    }
+}
+
+function changePage(delta) {
+    const totalPages = Math.ceil(filteredDiseases.length / itemsPerPage);
+    const newPage = currentPage + delta;
+    if (newPage >= 1 && newPage <= totalPages) {
+        currentPage = newPage;
+        renderList();
+        renderPagination();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function goToPage(page) {
+    currentPage = page;
+    renderList();
+    renderPagination();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function openModal(data) {
+    document.getElementById('modalName').innerText = data.name;
+    document.getElementById('modalCategory').innerText = data.category;
+    document.getElementById('modalPrevalence').innerText = data.prevalence;
+    
+    document.getElementById('modalSymptoms').innerText = data.symptoms || "Detailed symptoms not available.";
+    document.getElementById('modalControl').innerText = data.control_methods || "Standard control methods apply.";
+    document.getElementById('modalPreventive').innerText = data.preventive_measures || "Follow general agricultural preventive measures.";
+    
+    document.getElementById('modalAgent').innerText = data.causal_agent || "Unknown";
+    document.getElementById('modalSpread').innerText = data.spread || "Unknown";
+    document.getElementById('modalSeasonality').innerText = data.seasonality || "Year-round";
+    document.getElementById('modalImpact').innerText = data.impact || "Variable";
+    
+    document.getElementById('diseaseModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('diseaseModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close on outside click
+document.getElementById('diseaseModal').addEventListener('click', function(e) {
+    if(e.target === this) {
+        closeModal();
+    }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadData();
+});
+</script>
+
+</body>
+</html>
